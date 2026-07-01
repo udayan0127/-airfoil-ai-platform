@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./App.css";
+import TabNav from "./components/TabNav";
+import InputForm from "./components/InputForm";
+import PhysicsPanel from "./components/PhysicsPanel";
+import AirfoilCards from "./components/AirfoilCards";
+import AirfoilViewer3D from "./components/AirfoilViewer3D";
+import PolarPlot from "./components/PolarPlot";
 
 function App() {
   const [weight, setWeight] = useState("");
@@ -9,9 +15,12 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("input");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Fetch recommendation from backend
+  const fetchRecommendation = useCallback(async () => {
+    if (!weight || !speed || payload === "" || payload === null) return;
+
     setError("");
     setLoading(true);
 
@@ -25,7 +34,26 @@ function App() {
       console.error(err);
     }
     setLoading(false);
+  }, [weight, speed, payload]);
+
+  // Form submit handler (for button click / Enter key)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    fetchRecommendation();
   };
+
+  // Debounced auto-submit: wait 400ms after user stops changing values, then fetch
+  useEffect(() => {
+    if (!weight || !speed || payload === "" || payload === null) return;
+
+    const timer = setTimeout(() => {
+      fetchRecommendation();
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [weight, speed, payload, fetchRecommendation]);
+
+  const hasResults = result !== null;
 
   return (
     <div className="App">
@@ -35,125 +63,62 @@ function App() {
       </header>
 
       <main className="container">
-        <form onSubmit={handleSubmit} className="form">
-          <div className="form-group">
-            <label>Drone Weight (grams)</label>
-            <input
-              type="number"
-              placeholder="e.g., 990"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              required
-            />
-          </div>
+        <TabNav
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          hasResults={hasResults}
+        />
 
-          <div className="form-group">
-            <label>Max Speed (km/h)</label>
-            <input
-              type="number"
-              placeholder="e.g., 40"
-              value={speed}
-              onChange={(e) => setSpeed(e.target.value)}
-              required
-            />
-          </div>
+        <div className="tab-content">
+          {/* TAB: INPUT & ANALYSIS */}
+          {activeTab === "input" && (
+            <>
+              <InputForm
+                weight={weight} setWeight={setWeight}
+                speed={speed} setSpeed={setSpeed}
+                payload={payload} setPayload={setPayload}
+                onSubmit={handleSubmit}
+                loading={loading}
+                liveUpdate={loading}
+              />
 
-          <div className="form-group">
-            <label>Payload (grams)</label>
-            <input
-              type="number"
-              placeholder="e.g., 100"
-              value={payload}
-              onChange={(e) => setPayload(e.target.value)}
-              required
-            />
-          </div>
+              {error && <div className="error">{error}</div>}
 
-          <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? "Analyzing..." : "Get Airfoil Recommendation"}
-          </button>
-        </form>
-
-        {error && <div className="error">{error}</div>}
-
-        {result && (
-          <div className="results">
-            <div className="specs">
-              <p><strong>Weight:</strong> {result.input.weight_g}g</p>
-              <p><strong>Max Speed:</strong> {result.input.max_speed_kmh} km/h</p>
-              <p><strong>Payload:</strong> {result.input.payload_g}g</p>
-            </div>
-
-            <h2>🔬 Aerodynamic Analysis</h2>
-            <div className="physics-grid">
-              <div className="physics-card">
-                <div className="physics-label">Reynolds Number</div>
-                <div className="physics-value">{result.physics.reynolds_number.toLocaleString()}</div>
-              </div>
-              <div className="physics-card">
-                <div className="physics-label">Required Cl</div>
-                <div className="physics-value">{result.physics.required_cl}</div>
-              </div>
-              <div className="physics-card">
-                <div className="physics-label">Wing Loading</div>
-                <div className="physics-value">{result.physics.wing_loading_n_m2} N/m²</div>
-              </div>
-              <div className="physics-card">
-                <div className="physics-label">Flight Regime</div>
-                <div className="physics-value">{result.physics.flight_regime}</div>
-              </div>
-              <div className="physics-card">
-                <div className="physics-label">Est. Wing Area</div>
-                <div className="physics-value">{result.physics.estimated_wing_area_m2} m²</div>
-              </div>
-              <div className="physics-card">
-                <div className="physics-label">Est. Chord Length</div>
-                <div className="physics-value">{result.physics.estimated_chord_m} m</div>
-              </div>
-            </div>
-
-            <h2>📊 Recommended Airfoils</h2>
-            <div className="airfoils">
-              {result.airfoils.map((airfoil, idx) => (
-                <div key={idx} className="airfoil-card">
-                  <div className="airfoil-header">
-                    <h3>{airfoil.name}</h3>
-                    <span className="match-score">Score: {airfoil.match_score}</span>
-                  </div>
-                  <p className="airfoil-desc">{airfoil.description}</p>
-
-                  <div className="ai-explanation">
-                    <span className="ai-badge">🤖 AI Analysis</span>
-                    <p>{airfoil.ai_explanation}</p>
-                  </div>
-
-                  <div className="airfoil-stats">
-                    <div className="stat">
-                      <span className="stat-label">Cl max</span>
-                      <span className="stat-value">{airfoil.cl_max}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">Cd min</span>
-                      <span className="stat-value">{airfoil.cd_min}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">Best L/D</span>
-                      <span className="stat-value">{airfoil.best_cl_cd}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">Use case</span>
-                      <span className="stat-value">{airfoil.use_case}</span>
-                    </div>
-                  </div>
+              {result && (
+                <div className="results">
+                  <PhysicsPanel input={result.input} physics={result.physics} />
+                  <AirfoilCards airfoils={result.airfoils} recommendation={result.recommendation} />
                 </div>
-              ))}
-            </div>
+              )}
+            </>
+          )}
 
-            <div className="recommendation">
-              <p>{result.recommendation}</p>
+          {/* TAB: 3D VIEWER */}
+          {activeTab === "3d" && result && (
+            <AirfoilViewer3D airfoils={result.airfoils} />
+          )}
+
+          {/* TAB: DRAG POLAR */}
+          {activeTab === "polar" && result && (
+            <PolarPlot airfoils={result.airfoils} />
+          )}
+
+          {/* TAB: COMPARE */}
+          {activeTab === "compare" && (
+            <div className="empty-state">
+              <h3>⚖️ Airfoil Comparison</h3>
+              <p>Coming next</p>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* TAB: RE SWEEP */}
+          {activeTab === "sweep" && (
+            <div className="empty-state">
+              <h3>🌀 Reynolds Number Sweep</h3>
+              <p>Coming next</p>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

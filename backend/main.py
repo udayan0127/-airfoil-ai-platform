@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from aerodynamics import analyze_drone
 from matcher import recommend_airfoils
 from sarvam_integration import generate_airfoil_explanation
+from polar_data import generate_polar
 
 app = FastAPI()
 
@@ -55,7 +56,8 @@ async def recommend_airfoil(weight: float, max_speed: float, payload: float):
             "cd_min": af["cd_min"],
             "best_cl_cd": af["best_cl_cd"],
             "use_case": af["use_case"],
-            "ai_explanation": explanation  # NEW: Sarvam-generated text
+            "ai_explanation": explanation,  # NEW: Sarvam-generated text
+            "polar": generate_polar(af)
         })
 
     # Step 4: Format response
