@@ -78,18 +78,73 @@ function App() {
 
         {result && (
           <div className="results">
-            <h2>📊 Recommended Airfoils</h2>
             <div className="specs">
-              <p><strong>Weight:</strong> {result.weight_g}g</p>
-              <p><strong>Max Speed:</strong> {result.max_speed_kmh} km/h</p>
-              <p><strong>Payload:</strong> {result.payload_g}g</p>
+              <p><strong>Weight:</strong> {result.input.weight_g}g</p>
+              <p><strong>Max Speed:</strong> {result.input.max_speed_kmh} km/h</p>
+              <p><strong>Payload:</strong> {result.input.payload_g}g</p>
             </div>
 
+            <h2>🔬 Aerodynamic Analysis</h2>
+            <div className="physics-grid">
+              <div className="physics-card">
+                <div className="physics-label">Reynolds Number</div>
+                <div className="physics-value">{result.physics.reynolds_number.toLocaleString()}</div>
+              </div>
+              <div className="physics-card">
+                <div className="physics-label">Required Cl</div>
+                <div className="physics-value">{result.physics.required_cl}</div>
+              </div>
+              <div className="physics-card">
+                <div className="physics-label">Wing Loading</div>
+                <div className="physics-value">{result.physics.wing_loading_n_m2} N/m²</div>
+              </div>
+              <div className="physics-card">
+                <div className="physics-label">Flight Regime</div>
+                <div className="physics-value">{result.physics.flight_regime}</div>
+              </div>
+              <div className="physics-card">
+                <div className="physics-label">Est. Wing Area</div>
+                <div className="physics-value">{result.physics.estimated_wing_area_m2} m²</div>
+              </div>
+              <div className="physics-card">
+                <div className="physics-label">Est. Chord Length</div>
+                <div className="physics-value">{result.physics.estimated_chord_m} m</div>
+              </div>
+            </div>
+
+            <h2>📊 Recommended Airfoils</h2>
             <div className="airfoils">
               {result.airfoils.map((airfoil, idx) => (
                 <div key={idx} className="airfoil-card">
-                  <h3>{airfoil.name}</h3>
-                  <p>{airfoil.description}</p>
+                  <div className="airfoil-header">
+                    <h3>{airfoil.name}</h3>
+                    <span className="match-score">Score: {airfoil.match_score}</span>
+                  </div>
+                  <p className="airfoil-desc">{airfoil.description}</p>
+
+                  <div className="ai-explanation">
+                    <span className="ai-badge">🤖 AI Analysis</span>
+                    <p>{airfoil.ai_explanation}</p>
+                  </div>
+
+                  <div className="airfoil-stats">
+                    <div className="stat">
+                      <span className="stat-label">Cl max</span>
+                      <span className="stat-value">{airfoil.cl_max}</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-label">Cd min</span>
+                      <span className="stat-value">{airfoil.cd_min}</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-label">Best L/D</span>
+                      <span className="stat-value">{airfoil.best_cl_cd}</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-label">Use case</span>
+                      <span className="stat-value">{airfoil.use_case}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

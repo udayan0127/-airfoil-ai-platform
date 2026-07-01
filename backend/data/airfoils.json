@@ -1,0 +1,136 @@
+{
+  "airfoils": [
+    {
+      "name": "NACA 0012",
+      "type": "symmetric",
+      "cl_max": 1.2,
+      "cd_min": 0.006,
+      "best_cl_cd": 45,
+      "re_range": [50000, 500000],
+      "camber": 0,
+      "use_case": "acrobatic",
+      "description": "Symmetric, zero camber. Ideal for aerobatic flight and inverted flying."
+    },
+    {
+      "name": "NACA 2412",
+      "type": "cambered",
+      "cl_max": 1.4,
+      "cd_min": 0.0075,
+      "best_cl_cd": 65,
+      "re_range": [100000, 500000],
+      "camber": 2,
+      "use_case": "general",
+      "description": "Classic general-purpose airfoil. Excellent balance of lift and drag for cruise flight."
+    },
+    {
+      "name": "NACA 4412",
+      "type": "cambered",
+      "cl_max": 1.6,
+      "cd_min": 0.0085,
+      "best_cl_cd": 60,
+      "re_range": [100000, 500000],
+      "camber": 4,
+      "use_case": "heavy_lift",
+      "description": "Higher camber for increased lift. Suited for payload-carrying aircraft."
+    },
+    {
+      "name": "Clark Y",
+      "type": "cambered",
+      "cl_max": 1.5,
+      "cd_min": 0.008,
+      "best_cl_cd": 62,
+      "re_range": [80000, 400000],
+      "camber": 3.5,
+      "use_case": "trainer",
+      "description": "Flat bottom airfoil, easy to build, forgiving flight characteristics. Popular for trainers."
+    },
+    {
+      "name": "NACA 6412",
+      "type": "cambered",
+      "cl_max": 1.75,
+      "cd_min": 0.009,
+      "best_cl_cd": 58,
+      "re_range": [100000, 450000],
+      "camber": 6,
+      "use_case": "heavy_lift",
+      "description": "High camber for maximum lift generation. Good for slow, heavy-payload flight."
+    },
+    {
+      "name": "NACA 0009",
+      "type": "symmetric",
+      "cl_max": 1.0,
+      "cd_min": 0.0055,
+      "best_cl_cd": 48,
+      "re_range": [50000, 400000],
+      "camber": 0,
+      "use_case": "racing",
+      "description": "Thin symmetric profile, low drag. Ideal for high-speed racing drones."
+    },
+    {
+      "name": "NACA 2408",
+      "type": "cambered",
+      "cl_max": 1.3,
+      "cd_min": 0.0065,
+      "best_cl_cd": 68,
+      "re_range": [100000, 400000],
+      "camber": 2,
+      "use_case": "racing",
+      "description": "Thin, low-camber airfoil for speed-focused applications with modest lift needs."
+    },
+    {
+      "name": "Eppler 205",
+      "type": "cambered",
+      "cl_max": 1.35,
+      "cd_min": 0.007,
+      "best_cl_cd": 70,
+      "re_range": [50000, 300000],
+      "camber": 3,
+      "use_case": "glider",
+      "description": "Low Reynolds number optimized. Excellent for slow, efficient glider flight."
+    },
+    {
+      "name": "NACA 4415",
+      "type": "cambered",
+      "cl_max": 1.55,
+      "cd_min": 0.0095,
+      "best_cl_cd": 55,
+      "re_range": [150000, 500000],
+      "camber": 4,
+      "use_case": "heavy_lift",
+      "description": "Thicker profile with good lift characteristics. Suited for structurally robust heavy-lift wings."
+    },
+    {
+      "name": "S1223",
+      "type": "cambered",
+      "cl_max": 2.0,
+      "cd_min": 0.011,
+      "best_cl_cd": 50,
+      "re_range": [60000, 300000],
+      "camber": 7,
+      "use_case": "heavy_lift",
+      "description": "Very high lift airfoil for extreme low-speed, high-payload requirements."
+    },
+    {
+      "name": "NACA 0006",
+      "type": "symmetric",
+      "cl_max": 0.9,
+      "cd_min": 0.005,
+      "best_cl_cd": 42,
+      "re_range": [40000, 300000],
+      "camber": 0,
+      "use_case": "racing",
+      "description": "Very thin symmetric airfoil. Minimal drag for maximum speed applications."
+    },
+    {
+      "name": "NACA 23012",
+      "type": "cambered",
+      "cl_max": 1.45,
+      "cd_min": 0.0078,
+      "best_cl_cd": 63,
+      "re_range": [150000, 600000],
+      "camber": 2.3,
+      "use_case": "general",
+      "description": "Reflexed camber line, good stability characteristics. Suited for general aviation style RC planes."
+    }
+  ]
+}

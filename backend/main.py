@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import json
-import os
-from pathlib import Path
+
+from aerodynamics import analyze_drone
+from matcher import recommend_airfoils
+from sarvam_integration import generate_airfoil_explanation
 
 app = FastAPI()
 
@@ -15,29 +16,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Simple health check
+
 @app.get("/")
 def read_root():
-    return {"status": "Airfoil AI Platform running ✅"}
+    return {"status": "Airfoil AI Platform running - Sarvam AI integration active"}
 
-# Main endpoint
+
 @app.post("/recommend-airfoil")
 async def recommend_airfoil(weight: float, max_speed: float, payload: float):
     """
-    Takes drone specs and returns airfoil recommendations
+    Takes drone specs, runs physics analysis, matches airfoils,
+    and generates AI explanations using Sarvam.
     """
-    # For now, return hardcoded data
-    # Tomorrow we'll integrate real XFOIL + Sarvam
+    # Step 1: Physics analysis
+    physics = analyze_drone(
+        weight_g=weight,
+        max_speed_kmh=max_speed,
+        payload_g=payload
+    )
+
+    # Step 2: Match against airfoil database
+    top_airfoils = recommend_airfoils(
+        reynolds=physics["reynolds_number"],
+        required_cl=physics["required_cl"],
+        flight_regime=physics["flight_regime"],
+        top_n=3
+    )
+
+    # Step 3: Generate Sarvam explanations for each airfoil
+    airfoils_with_explanations = []
+    for af in top_airfoils:
+        explanation = generate_airfoil_explanation(af["name"], af, physics)
+        airfoils_with_explanations.append({
+            "name": af["name"],
+            "description": af["description"],
+            "match_score": af["match_score"],
+            "cl_max": af["cl_max"],
+            "cd_min": af["cd_min"],
+            "best_cl_cd": af["best_cl_cd"],
+            "use_case": af["use_case"],
+            "ai_explanation": explanation  # NEW: Sarvam-generated text
+        })
+
+    # Step 4: Format response
     return {
-        "weight_g": weight,
-        "max_speed_kmh": max_speed,
-        "payload_g": payload,
-        "airfoils": [
-            {"name": "NACA 2412", "description": "Good all-rounder, excellent for your RC plane weight"},
-            {"name": "NACA 4412", "description": "Higher lift, great for heavier payloads"}
-        ],
-        "recommendation": "Testing mode - real recommendations coming soon!"
+        "input": {
+            "weight_g": weight,
+            "max_speed_kmh": max_speed,
+            "payload_g": payload
+        },
+        "physics": physics,
+        "airfoils": airfoils_with_explanations,
+        "recommendation": f"Based on your specs, we recommend {top_airfoils[0]['name']} for your build. See the AI explanation below."
     }
+
 
 if __name__ == "__main__":
     import uvicorn
