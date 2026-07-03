@@ -8,7 +8,7 @@ function SliderInput({ label, value, setValue, min, max, step, unit }) {
             type="number"
             className="slider-number"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => setValue(parseFloat(e.target.value))}
             min={min}
             max={max}
             step={step}
@@ -20,7 +20,7 @@ function SliderInput({ label, value, setValue, min, max, step, unit }) {
         type="range"
         className="slider-range"
         value={value || min}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => setValue(parseFloat(e.target.value))}
         min={min}
         max={max}
         step={step}
