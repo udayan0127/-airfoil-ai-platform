@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from aerodynamics import analyze_drone
 from matcher import recommend_airfoils
@@ -28,14 +28,17 @@ async def recommend_airfoil(weight: float, max_speed: float, payload: float,
     Takes aircraft specs + wing geometry, runs physics analysis, matches airfoils,
     and generates AI explanations using Sarvam.
     """
-    # Step 1: Physics analysis using wingspan + AR
-    physics = analyze_drone(
-        weight_g=weight,
-        max_speed_kmh=max_speed,
-        payload_g=payload,
-        wingspan_m=wingspan,
-        aspect_ratio=aspect_ratio
-    )
+    # Step 1: Physics analysis using wingspan + AR (with validation)
+    try:
+        physics = analyze_drone(
+            weight_g=weight,
+            max_speed_kmh=max_speed,
+            payload_g=payload,
+            wingspan_m=wingspan,
+            aspect_ratio=aspect_ratio
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     
     # Step 2: Match against airfoil database
     top_airfoils = recommend_airfoils(

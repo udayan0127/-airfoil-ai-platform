@@ -19,36 +19,24 @@ DEFAULT_ASPECT_RATIO = 5.18  # dimensionless
 
 
 def wing_area_from_span(wingspan_m: float, aspect_ratio: float) -> float:
-    """
-    Wing area derived from wingspan and aspect ratio.
-    AR = wingspan² / area  =>  area = wingspan² / AR
-    """
+    """Wing area derived from wingspan and aspect ratio. area = wingspan² / AR"""
     return round((wingspan_m ** 2) / aspect_ratio, 4)
 
 
 def chord_from_span(wingspan_m: float, aspect_ratio: float) -> float:
-    """
-    Mean chord derived from wingspan and aspect ratio.
-    chord = wingspan / AR (for rectangular wing approximation)
-    """
+    """Mean chord derived from wingspan and aspect ratio. chord = wingspan / AR"""
     return round(wingspan_m / aspect_ratio, 4)
 
 
-
 def calculate_reynolds_number(speed_kmh: float, chord_length_m: float) -> float:
-    """
-    Reynolds number = (density * velocity * chord_length) / viscosity
-    """
-    speed_ms = speed_kmh / 3.6  # km/h to m/s
+    """Reynolds number = (density * velocity * chord_length) / viscosity"""
+    speed_ms = speed_kmh / 3.6
     re = (AIR_DENSITY * speed_ms * chord_length_m) / AIR_VISCOSITY
     return round(re, 0)
 
 
 def calculate_required_cl(weight_g: float, speed_kmh: float, wing_area_m2: float) -> float:
-    """
-    Required lift coefficient to sustain level flight.
-    L = weight => Cl = (2 * W) / (rho * V^2 * S)
-    """
+    """Required Cl for level flight. Cl = (2 * W) / (rho * V^2 * S)"""
     weight_kg = weight_g / 1000
     weight_n = weight_kg * GRAVITY
     speed_ms = speed_kmh / 3.6
@@ -61,19 +49,14 @@ def calculate_required_cl(weight_g: float, speed_kmh: float, wing_area_m2: float
 
 
 def calculate_wing_loading(weight_g: float, wing_area_m2: float) -> float:
-    """
-    Wing loading = weight / wing area (N/m²)
-    Lower = slow, maneuverable; Higher = fast, payload-capable
-    """
+    """Wing loading = weight / wing area (N/m²)"""
     weight_kg = weight_g / 1000
     weight_n = weight_kg * GRAVITY
     return round(weight_n / wing_area_m2, 2)
 
 
 def determine_flight_regime(speed_kmh: float, payload_g: float, weight_g: float) -> str:
-    """
-    Categorize flight regime based on specs, to match against airfoil use_case
-    """
+    """Categorize flight regime for matching against airfoil use_case."""
     payload_ratio = payload_g / weight_g if weight_g > 0 else 0
 
     if speed_kmh > 60:
@@ -94,8 +77,31 @@ def analyze_drone(weight_g: float, max_speed_kmh: float, payload_g: float,
     derives wing area and chord, then computes physics.
 
     Wingspan and AR come from user input (easy to measure/estimate).
-    Wing area and chord are DERIVED from these two, not asked separately.
+    Wing area and chord are DERIVED from these two.
     """
+    # ===== INPUT VALIDATION =====
+    if weight_g <= 0:
+        raise ValueError("Weight must be positive (> 0g)")
+    if weight_g > 10000:
+        raise ValueError("Weight too high (> 10kg). Use realistic RC/drone values.")
+
+    if max_speed_kmh <= 0:
+        raise ValueError("Speed must be positive (> 0 km/h)")
+    if max_speed_kmh > 200:
+        raise ValueError("Speed too high (> 200 km/h). Use realistic RC/drone values.")
+
+    if payload_g < 0:
+        raise ValueError("Payload cannot be negative")
+    if payload_g > weight_g * 2:
+        raise ValueError("Payload unrealistically high (> 2x airframe weight)")
+
+    if wingspan_m < 0.1 or wingspan_m > 3.0:
+        raise ValueError("Wingspan must be between 0.1m and 3.0m")
+
+    if aspect_ratio < 1.5 or aspect_ratio > 12:
+        raise ValueError("Aspect ratio must be between 1.5 and 12")
+    # ===== END VALIDATION =====
+
     total_weight = weight_g + payload_g
 
     # Derive wing geometry from wingspan and AR
@@ -118,30 +124,6 @@ def analyze_drone(weight_g: float, max_speed_kmh: float, payload_g: float,
         "wingspan_m": wingspan_m,
         "aspect_ratio": aspect_ratio
     }
-    """
-    Main analysis function. Takes drone specs + wing geometry, returns full physics analysis.
-
-    Wing geometry comes from user input (or defaults to reference RC plane).
-    Weight changes → required Cl and wing loading change.
-    Speed changes → Reynolds number changes.
-    Wing geometry does NOT change unless caller provides new values.
-    """
-    total_weight = weight_g + payload_g
-
-    reynolds = calculate_reynolds_number(max_speed_kmh, chord_length_m)
-    required_cl = calculate_required_cl(total_weight, max_speed_kmh, wing_area_m2)
-    wing_loading = calculate_wing_loading(total_weight, wing_area_m2)
-    flight_regime = determine_flight_regime(max_speed_kmh, payload_g, weight_g)
-
-    return {
-        "reynolds_number": reynolds,
-        "required_cl": required_cl,
-        "wing_loading_n_m2": wing_loading,
-        "flight_regime": flight_regime,
-        "total_weight_g": total_weight,
-        "estimated_wing_area_m2": wing_area_m2,
-        "estimated_chord_m": chord_length_m
-    }
 
 
 # Quick test
@@ -154,3 +136,9 @@ if __name__ == "__main__":
     result2 = analyze_drone(weight_g=500, max_speed_kmh=80, payload_g=200,
                             wingspan_m=0.6, aspect_ratio=3.0)
     print(result2)
+    print()
+    print("=== Testing validation (should raise error) ===")
+    try:
+        analyze_drone(weight_g=-100, max_speed_kmh=40, payload_g=0)
+    except ValueError as e:
+        print(f"✓ Caught expected error: {e}")
