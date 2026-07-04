@@ -14,7 +14,7 @@ function InputForm({
   const presets = {
     "Small RC": { wingspan: 1.01, aspectRatio: 5.18 },
     "Racing Drone": { wingspan: 0.8, aspectRatio: 4.0 },
-    };
+  };
 
   const applyPreset = (presetName) => {
     const preset = presets[presetName];
@@ -105,7 +105,14 @@ function InputForm({
       />
 
       <button type="submit" disabled={loading} className="submit-btn">
-        {loading ? "Analyzing..." : "Get Airfoil Recommendation"}
+        {loading ? (
+          <>
+            <span className="spinner">⚙️</span>
+            Analyzing...
+          </>
+        ) : (
+          "Get Airfoil Recommendation"
+        )}
       </button>
     </form>
   );

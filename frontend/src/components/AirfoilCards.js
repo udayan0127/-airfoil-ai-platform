@@ -10,12 +10,10 @@ function AirfoilCards({ airfoils, recommendation }) {
               <span className="match-score">Score: {airfoil.match_score}</span>
             </div>
             <p className="airfoil-desc">{airfoil.description}</p>
-
             <div className="ai-explanation">
               <span className="ai-badge">🤖 AI Analysis</span>
               <p>{airfoil.ai_explanation}</p>
             </div>
-
             <div className="airfoil-stats">
               <div className="stat">
                 <span className="stat-label">Cl max</span>
@@ -37,7 +35,6 @@ function AirfoilCards({ airfoils, recommendation }) {
           </div>
         ))}
       </div>
-
       <div className="recommendation">
         <p>{recommendation}</p>
       </div>

@@ -130,13 +130,13 @@ function ComparisonMode({ airfoils }) {
         <h3>Drag Polar Comparison</h3>
         <div className="chart-container">
           <ResponsiveContainer width="100%" height={400}>
-            <LineChart margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+            <LineChart margin={{ top: 20, right: 30, left: 20, bottom: 70 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 217, 255, 0.1)" />
               <XAxis
                 type="number"
                 dataKey="cd"
                 stroke="#888"
-                label={{ value: "Cd (Drag)", position: "bottom", fill: "#00d9ff", offset: 20 }}
+                label={{ value: "Cd (Drag)", position: "insideBottom", fill: "#00d9ff", offset: -5 }}
                 domain={["auto", "auto"]}
                 tickFormatter={(v) => v.toFixed(4)}
               />
@@ -156,7 +156,7 @@ function ComparisonMode({ airfoils }) {
                 labelStyle={{ color: "#00d9ff" }}
                 formatter={(value) => value.toFixed(4)}
               />
-              <Legend wrapperStyle={{ paddingTop: 20 }} />
+              <Legend wrapperStyle={{ paddingTop: 40 }} />
               <Line
                 type="monotone"
                 data={A.polar.curve}

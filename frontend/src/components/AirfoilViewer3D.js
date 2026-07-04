@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text, Environment } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { generateNacaCoords } from "./nacaMath";
 
@@ -23,16 +23,16 @@ function AirfoilMesh({ airfoilName, color = "#00d9ff" }) {
     // Build a Shape from the 2D coordinates (centered at chord midpoint)
     const shape = new THREE.Shape();
     coords.forEach(([x, y], i) => {
-      const cx = x - 0.5;  // center along chord
+      const cx = x - 0.5;
       const cy = y;
       if (i === 0) shape.moveTo(cx, cy);
       else shape.lineTo(cx, cy);
     });
     shape.closePath();
 
-    // Extrude into 3D (wingspan direction)
+    // Extrude into 3D — depth increased for bigger wing
     const extrudeSettings = {
-      depth: 2.5,
+      depth: 4.0,
       bevelEnabled: true,
       bevelThickness: 0.02,
       bevelSize: 0.01,
@@ -46,7 +46,7 @@ function AirfoilMesh({ airfoilName, color = "#00d9ff" }) {
   }, [airfoilName]);
 
   return (
-    <mesh ref={meshRef} geometry={geometry} castShadow receiveShadow>
+    <mesh ref={meshRef} geometry={geometry} scale={[2.2, 2.2, 1]} castShadow receiveShadow>
       <meshStandardMaterial
         color={color}
         metalness={0.4}
@@ -58,12 +58,9 @@ function AirfoilMesh({ airfoilName, color = "#00d9ff" }) {
   );
 }
 
-/**
- * Grid floor with subtle glow
- */
 function GridFloor() {
   return (
-    <gridHelper args={[10, 20, "#00d9ff", "#1a1a2e"]} position={[0, -1.2, 0]} />
+    <gridHelper args={[15, 30, "#00d9ff", "#1a1a2e"]} position={[0, -1.5, 0]} />
   );
 }
 
@@ -101,7 +98,7 @@ function AirfoilViewer3D({ airfoils }) {
       <div className="canvas-container">
         <Canvas
           shadows
-          camera={{ position: [3, 2, 4], fov: 45 }}
+          camera={{ position: [4, 2.5, 5], fov: 45 }}
           gl={{ antialias: true }}
         >
           <color attach="background" args={["#0a0919"]} />
@@ -128,28 +125,28 @@ function AirfoilViewer3D({ airfoils }) {
           <OrbitControls
             enableDamping
             dampingFactor={0.08}
-            minDistance={2}
-            maxDistance={12}
+            minDistance={3}
+            maxDistance={15}
           />
         </Canvas>
       </div>
 
-      <div className="viewer-info">
-        <div className="viewer-info-card">
-          <span className="viewer-label">Selected</span>
-          <span className="viewer-value">{selected.name}</span>
+      <div className="viewer-info-grid">
+        <div className="info-card">
+          <div className="info-label">Selected</div>
+          <div className="info-value">{selected.name}</div>
         </div>
-        <div className="viewer-info-card">
-          <span className="viewer-label">Cl max</span>
-          <span className="viewer-value">{selected.cl_max}</span>
+        <div className="info-card">
+          <div className="info-label">Cl max</div>
+          <div className="info-value">{selected.cl_max}</div>
         </div>
-        <div className="viewer-info-card">
-          <span className="viewer-label">Cd min</span>
-          <span className="viewer-value">{selected.cd_min}</span>
+        <div className="info-card">
+          <div className="info-label">Cd min</div>
+          <div className="info-value">{selected.cd_min}</div>
         </div>
-        <div className="viewer-info-card">
-          <span className="viewer-label">Best L/D</span>
-          <span className="viewer-value">{selected.best_cl_cd}</span>
+        <div className="info-card">
+          <div className="info-label">Best L/D</div>
+          <div className="info-value">{selected.best_cl_cd}</div>
         </div>
       </div>
     </div>
