@@ -48,6 +48,13 @@ async def recommend_airfoil(weight: float, max_speed: float, payload: float,
         top_n=3
     )
     
+    # Guard: no matches found for these specs
+    if not top_airfoils:
+        raise HTTPException(
+            status_code=404,
+            detail="No suitable airfoils found for these specifications. Try adjusting weight, speed, or wing geometry."
+        )
+    
     # Step 3: Generate Sarvam explanations + polar + Reynolds sweep for each airfoil
     airfoils_with_explanations = []
     for af in top_airfoils:
