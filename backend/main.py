@@ -5,22 +5,22 @@ from matcher import recommend_airfoils
 from sarvam_integration import generate_airfoil_explanation
 from polar_data import generate_polar
 from reynolds_sweep import generate_reynolds_sweep
-
 app = FastAPI()
-
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://airfoil-ai-platform.vercel.app",
+    ],
+    allow_origin_regex=r"https://airfoil-ai-platform.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 @app.get("/")
 def read_root():
     return {"status": "Airfoil AI Platform running - Sarvam AI integration active"}
-
 @app.post("/recommend-airfoil")
 async def recommend_airfoil(weight: float, max_speed: float, payload: float,
                             wingspan: float = 1.01, aspect_ratio: float = 5.18):
@@ -39,7 +39,6 @@ async def recommend_airfoil(weight: float, max_speed: float, payload: float,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
     # Step 2: Match against airfoil database
     top_airfoils = recommend_airfoils(
         reynolds=physics["reynolds_number"],
@@ -47,14 +46,12 @@ async def recommend_airfoil(weight: float, max_speed: float, payload: float,
         flight_regime=physics["flight_regime"],
         top_n=3
     )
-    
     # Guard: no matches found for these specs
     if not top_airfoils:
         raise HTTPException(
             status_code=404,
             detail="No suitable airfoils found for these specifications. Try adjusting weight, speed, or wing geometry."
         )
-    
     # Step 3: Generate Sarvam explanations + polar + Reynolds sweep for each airfoil
     airfoils_with_explanations = []
     for af in top_airfoils:
@@ -71,7 +68,6 @@ async def recommend_airfoil(weight: float, max_speed: float, payload: float,
             "polar": generate_polar(af),
             "reynolds_sweep": generate_reynolds_sweep(af)
         })
-    
     # Step 4: Format response
     return {
         "input": {
@@ -85,7 +81,6 @@ async def recommend_airfoil(weight: float, max_speed: float, payload: float,
         "airfoils": airfoils_with_explanations,
         "recommendation": f"Based on your specs, we recommend {top_airfoils[0]['name']} for your build. See the AI explanation below."
     }
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
